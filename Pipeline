@@ -1,4 +1,4 @@
-# DADA2
+# DADA2 amplicon processing pipeline
 
 ```{r}
 #Load required libraries 
@@ -8,32 +8,34 @@ library(Biostrings)
 library(ggplot2)
 ```
 
-```{r}
+
 #Set the working directory to where your sequence files are.
 setwd("/Users/larawarriner/Desktop/Seqs_Assignment3")
 path<-"/Users/larawarriner/Desktop/Seqs_Assignment3"
 list.files(path)
-```
 
-```{r}
+
 #If you have a different name format, change the script but keep the object names the same 
 # For these samples the forward and reverse fastq filenames have format: SAMPLENAME_R1_001.fastq and SAMPLENAME_R2_001.fastq.
+```{r}
 fnFs <- sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE))
 fnRs <- sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
 # Extract sample names. Again check the format. This function assumes: SAMPLENAME_XXX.fastq
 sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
 ```
 
-```{r}
+
 #Inspect the quality of sequences (forward) 
+```{r}
 plotQualityProfile(fnFs[1:2])
+```
 #The cycle is equivalent of a base pair. Quality is best close to the primer.  
 #Mean quality score is green (focus on this)
 #If you trim too much there might not be enough overlap for ends to match.
 #Quality score of 30 is a good cut off point. 
 #Ignore the negative control in terms of trimming the sequence. 
 #cut at 250 here for instance.  
-```
+
 
 ```{r} 
 #Do the same for reverse reads.
@@ -53,12 +55,14 @@ names(filtRs) <- sample.names
 
 #For forward reads cutting at 250, for reverse reads cutting at 190. This will need to be changed depending on your data. 
 #We are throwing out anything with an unknown nucleotide (N)
+```{r}
 out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(250,190),
               maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
               compress=TRUE, multithread=TRUE) # On Windows set multithread=FALSE
 head(out)
 #Read out shows you how many are lost 
 #These are stringent filtering parameters
+```
 
 ```{r} 
 errF <- learnErrors(filtFs, multithread=TRUE)
@@ -118,8 +122,7 @@ taxa.print <- taxa # Removing sequence row names for display only
 rownames(taxa.print) <- NULL
 head(taxa.print)
 ```
-
-#NOT in protocol. We want to save the data to computer
+#NOT in protocol. We want to save the data to our computer
 write.csv(taxa, file="/Users/larawarriner/Desktop/seqs_Assignment3/taxa")
 write.csv(seqtab.nochim, file= "/Users/larawarriner/Desktop/seqs_Assignment3/seqtab.nochim.csv")
 
@@ -128,9 +131,11 @@ taxa<- read.csv (file="/Users/larawarriner/Desktop/seqs_Assignment3/taxa", sep =
 
 seqtab.nochim<- read.csv(file="/Users/larawarriner/Desktop/seqs_Assignment3/seqtab.nochim.csv", sep =',' , row.names=1)
 
-#First convert data frame into a matrix. If we didn't use first row as a header, would be difficult to make it into a matrix. Bold is not data it's a header. 
+```{r}
+#First convert data frame into a matrix. If we didn't use first row as a header, it would be difficult to make it into a matrix. Bold is not data it's a header. 
 seqtab.nochim<-as.matrix(seqtab.nochim)
 taxa<-as.matrix(taxa)
+```
 
 ```{r}
 #It is useful to have taxonomic identity and the abundance. First step transpose (ie., flip) the seqtab.nochim.
@@ -156,7 +161,7 @@ rownames(samdf) <- samples.out
 ```
 
 ```{r}
-#Hand off to phyloseq. Perform phyloseq, abundance table (otu_table) is in this file. We don't have taxa. 
+#Hand off to phyloseq. Perform phyloseq, abundance table (otu_table) is in this file. 
 #Then saying sample data is in an object called sample data frame. Where we actually have the information is in taxa. It is just called OTU because that is what used to be used. 
 ps<-phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), sample_data(samdf),tax_table(taxa))
 ps
@@ -170,33 +175,37 @@ taxa_names(ps)<-paste0("ASV", seq(ntaxa(ps)))
 ps
 ```
 
+
+#If we want to use ggplot alone we need to get data out of phyloseq into a dataframe. Use the psmelt function.
 ```{r}
-#If we want to use ggplot alone we need to get data out of phyloseq into a dataframe.Use the psmelt function.
 ps.table<-psmelt(ps)
+```
 #Need to factor the column. We are focusing on phylym so we will factor it.
+```{r}
 ps.table$Phylum<-factor(ps.table$Phylum)
 ggplot(ps.table,mapping =  aes(x=Sample, y=Abundance))+ geom_bar(stat = "identity", position="stack") + aes(fill=Phylum)
 #If making geom bar need stat= identity if making the x and y.
 ```  
 
-```{r}
+
 #Often presented as relative abudance (Example: what percentage is Baceriodata). Easy way to compare between samples. Percentage of the total basically. 
+```{r}
 ps.prop<-transform_sample_counts(ps,function(OTU) OTU/sum(OTU))
 #Transform into dataframe 
 ps.proptable<-psmelt(ps.prop)
 ps.proptable$Phylum<-factor(ps.proptable$Phylum)
 ```
 
-```{r}
 #now graph it
+```{r}
 ggplot(ps.proptable,mapping =  aes(x=Sample, y=Abundance))+ geom_bar(stat = "identity", position="stack") + aes(fill=Phylum) +
   xlab("Sample") +
   ylab("Relative Abundance")                 +
   ggtitle("Relative Abundance of Phyla in Permafrost Samples from the Canadian Arctic")+ scale_x_discrete(labels=c("Hummock", "Negative Control", "Trough"))
 ```
-
-```{r}
+  
 #now graph it for order
+```{r}
 ps.proptable$Order<-factor(ps.proptable$Order)
 ggplot(ps.proptable,mapping =  aes(x=Sample, y=Abundance))+ geom_bar(stat = "identity", position="stack") + aes(fill=Order) +
   xlab("Sample") +
