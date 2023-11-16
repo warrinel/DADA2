@@ -205,21 +205,6 @@ ggplot(ps.proptable,mapping =  aes(x=Sample, y=Abundance))+ geom_bar(stat = "ide
 ```
 
 ```{r}
-#Subset samples. 
-phylo2 = subset_samples(ps, samples.out == "Nig-ALNeg" | samples.out == "Nig-ALH1")
-# remove all OTUs not found at least once in both samples 
-phylo2 = filter_taxa(phylo2, function(x) sum(x >= 1) == (2), TRUE)
-# display the OTU table
-otu_table(phylo2)
-#Do it again for Nig-ALH1
-phylo3 = subset_samples(ps, samples.out == "Nig-ALNeg" | samples.out == "Nig-ALT2")
-# remove all OTUs not found at least once in both samples 
-phylo3 = filter_taxa(phylo3, function(x) sum(x >= 1) == (2), TRUE)
-# display the OTU table
-otu_table(phylo3)
-#ASV11 is the only ASV present in all three samples.
-```
-```{r}
 ggplot(ps.proptable,mapping =  aes(x=Sample, y=Phylum))+ geom_point (aes(size=Abundance*100)) +aes(color=Phylum) + guides(color="none") + theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))+   xlab("Sample") +
   ylab("Phylum") + ggtitle("Relative Abundance of Phyla in Permafrost Samples from the Canadian Arctic")+ scale_x_discrete(labels=c("Hummock", "Negative Control", "Trough"))+ labs(size='Relative Abundance (%)') 
