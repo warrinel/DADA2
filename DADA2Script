@@ -10,8 +10,8 @@ library(ggplot2)
 
 
 #Set the working directory to where your sequence files are.
-setwd("/Users/larawarriner/Desktop/Seqs_Assignment3")
-path<-"/Users/larawarriner/Desktop/Seqs_Assignment3"
+setwd("<your path>")
+path<-"<your path>"
 list.files(path)
 
 
@@ -34,14 +34,13 @@ plotQualityProfile(fnFs[1:2])
 #If you trim too much there might not be enough overlap for ends to match.
 #Quality score of 30 is a good cut off point. 
 #Ignore the negative control in terms of trimming the sequence. 
-#cut at 250 here for instance.  
+ 
 
 
 ```{r} 
 #Do the same for reverse reads.
 plotQualityProfile(fnRs[1:2])
 #1:2 means look at the first two samples for both the forward and reverse
-#Cut at 190 here for instance.
 ```
 
 ```{r}
@@ -109,12 +108,12 @@ sum(seqtab.nochim)/sum(seqtab)
 
 ```{r}
 #Compare to a training set of known species data
-taxa <- assignTaxonomy(seqtab.nochim, "/Users/larawarriner/Desktop/Seqs_Assignment3/silva_nr99_v138.1_train_set.fa.gz", multithread=TRUE)
+taxa <- assignTaxonomy(seqtab.nochim, "<path of database>", multithread=TRUE)
 ```
 
 ```{r}
 #Optional Extention to species level
-taxa <- addSpecies(taxa,"/Users/larawarriner/Desktop/Seqs_Assignment3/silva_species_assignment_v138.1.fa.gz")
+taxa <- addSpecies(taxa,"<path of database>")
 ```
 
 ```{r}
@@ -123,13 +122,13 @@ rownames(taxa.print) <- NULL
 head(taxa.print)
 ```
 #NOT in protocol. We want to save the data to our computer
-write.csv(taxa, file="/Users/larawarriner/Desktop/seqs_Assignment3/taxa")
-write.csv(seqtab.nochim, file= "/Users/larawarriner/Desktop/seqs_Assignment3/seqtab.nochim.csv")
+write.csv(taxa, file="<your path>")
+write.csv(seqtab.nochim, file= "<your path>")
 
 #Continue from where we left off 
-taxa<- read.csv (file="/Users/larawarriner/Desktop/seqs_Assignment3/taxa", sep =',', row.names =1)
+taxa<- read.csv (file="<your path>", sep =',', row.names =1)
 
-seqtab.nochim<- read.csv(file="/Users/larawarriner/Desktop/seqs_Assignment3/seqtab.nochim.csv", sep =',' , row.names=1)
+seqtab.nochim<- read.csv(file="<your path>", sep =',' , row.names=1)
 
 ```{r}
 #First convert data frame into a matrix. If we didn't use first row as a header, it would be difficult to make it into a matrix. Bold is not data it's a header. 
@@ -149,7 +148,7 @@ OTUabund<- cbind(flipped_seqtab.nochim, taxa)
 #Look at sheet to find the shared ASVs. 
 ```
 
-write.csv(OTUabund, file="/Users/larawarriner/Desktop/seqs_Assignment3/OTUabund.csv")
+write.csv(OTUabund, file="<your path>")
 
 ```{r}
 #Now lets make some graphs, First lets make a data frame
